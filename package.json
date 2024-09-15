@@ -10,7 +10,6 @@
   "description": "",
   "dependencies": {
     "@discordjs/builders": "^1.9.0",
-    "@discordjs/opus": "^0.9.0",
     "@discordjs/rest": "^2.4.0",
     "@discordjs/voice": "github:discordjs/voice",
     "discord-api-types": "^0.37.100",
@@ -19,6 +18,7 @@
     "discord.js": "^14.16.1",
     "dotenv": "^16.4.5",
     "ioredis": "^5.4.1",
+    "mediaplex": "^0.0.9",
     "redis": "^4.7.0"
   }
 }
