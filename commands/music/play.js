@@ -1,12 +1,11 @@
 const { SlashCommandBuilder } = require("discord.js");
 const { useMainPlayer } = require("discord-player");
 
-
 module.exports = {
   category: 'music',
   data: new SlashCommandBuilder()
     .setName('play')
-    .setDescription('Play a song or playlist from url or name')
+    .setDescription('Play a song')
     .addStringOption(option =>
 			option.setName('query')
 				.setDescription('The name or url of the song, you want to play.')
