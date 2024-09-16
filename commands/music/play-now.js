@@ -1,28 +1,24 @@
-const { SlashCommandBuilder } = require("discord.js");
-const { useMainPlayer } = require("discord-player");
-
+const { SlashCommandBuilder } = require('discord.js');
+const { useQueue, useMainPlayer } = require('discord-player');
 
 module.exports = {
   category: 'music',
   data: new SlashCommandBuilder()
-    .setName('play')
-    .setDescription('Play a song or playlist from url or name')
+    .setName('play-now')
+    .setDescription('Skips queue to play song')
     .addStringOption(option =>
 			option.setName('query')
 				.setDescription('The name or url of the song, you want to play.')
 				.setRequired(true)),
-  async execute (interaction) {
-
-    // Setup player and channel
+  async execute(interaction) {
+    const queue = useQueue(interaction.guild.id);
     const player = useMainPlayer();
-    const channel = interaction.member.voice.channel;
     const query = interaction.options.getString('query');
 
-
-    // Check for voice channel
-    if (!channel) {
-      return interaction.reply('You are not connected to a voice channel!');
+    if(queue.isEmpty() && !queue.isPlaying()) {
+      return interaction.reply('No queue to skip, use the play command');
     }
+
 
     // Defer interaction so the request has time to process
     await interaction.deferReply();
@@ -38,17 +34,17 @@ module.exports = {
 
 
     try {
-      const { track } = await player.play(channel, result, {
-        nodeOptions: {
-          metadata: interaction,
-          connectionOptions: { deaf: true },
-        }
-      });
-      
-      return interaction.followUp(`You got it cool cat!`);
+      queue.insertTrack(result.tracks[0], 0);
+      queue.node.skip();
+      if (!queue.isPlaying()) {
+        await queue.node.play(null, options.audioPlayerOptions);
+      }
+
+      await interaction.editReply(`You got it on the double ya dapper dog!`)
     } catch (e) {
       // Return error if something failed
       return interaction.followUp(`Something went wrong: ${e}`);
     }
+
   }
 };
