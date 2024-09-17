@@ -8,14 +8,14 @@ module.exports = {
     .setDescription('Skips queue to play song')
     .addStringOption(option =>
 			option.setName('query')
-				.setDescription('The name or url of the song, you want to play.')
+				.setDescription('The name of the song, you want to play.')
 				.setRequired(true)),
   async execute(interaction) {
     const queue = useQueue(interaction.guild.id);
     const player = useMainPlayer();
     const query = interaction.options.getString('query');
 
-    if(queue.isEmpty() && !queue.isPlaying()) {
+    if(!queue || !queue.isPlaying()) {
       return interaction.reply('No queue to skip, use the play command');
     }
 

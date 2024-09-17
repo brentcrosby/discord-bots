@@ -41,6 +41,7 @@ module.exports = {
         nodeOptions: {
           metadata: interaction,
           connectionOptions: { deaf: true },
+          volume: 30,
         }
       });
       

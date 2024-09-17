@@ -19,6 +19,7 @@
     "dotenv": "^16.4.5",
     "ioredis": "^5.4.1",
     "mediaplex": "^0.0.9",
-    "redis": "^4.7.0"
+    "redis": "^4.7.0",
+    "spotify-web-api-node": "^5.0.2"
   }
 }
