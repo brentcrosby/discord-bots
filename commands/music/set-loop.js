@@ -1,9 +1,5 @@
-const { 
-  SlashCommandBuilder, 
-  ButtonBuilder, 
-  ButtonStyle, 
-  ActionRowBuilder 
-} = require('discord.js');
+const { SlashCommandBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
+const { ensureActiveQueueAndChannel } = require('../../utils/musicUtils');
 const { useQueue } = require('discord-player');
 
 module.exports = {
@@ -23,26 +19,15 @@ module.exports = {
 				)),
   
   async execute(interaction) {
-    const queue = useQueue(interaction.guild.id);
 
-    // Check if the user is in a voice channel
-    if (!interaction.member.voice.channel) {
-      return interaction.reply({ 
-        content: 'You need to be in a voice channel to use this command.', 
-        ephemeral: true 
-      });
-    }
+    // Ensure the user is in a voice channel and there is an active queue
+    const check = await ensureActiveQueueAndChannel(interaction);
+    if (!check) return;
 
-    // Check if there's an active queue
-    if (!queue || !queue.node.isPlaying()) {
-      return interaction.reply({ 
-        content: 'There is no music currently playing.', 
-        ephemeral: true 
-      });
-    }
 
     // Get option and set loop mode
     const mode = interaction.options.getInteger('loop-mode');
+    const queue = useQueue(interaction.guild.id);
     queue.setRepeatMode(mode);
 
     // Define labels for feedback

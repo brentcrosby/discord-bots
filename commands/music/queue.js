@@ -1,18 +1,19 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { useQueue } = require('discord-player');
+const { ensureActiveQueueAndChannel } = require('../../utils/musicUtils');
 
 module.exports = {
   category: 'music',
   data: new SlashCommandBuilder()
-    .setName('view-queue')
+    .setName('queue')
     .setDescription('View all the songs in queue'),
   async execute(interaction) {
+
+    // Ensure the user is in a voice channel and there is an active queue
+    const check = await ensureActiveQueueAndChannel(interaction);
+    if (!check) return;
+
     const queue = useQueue(interaction.guild.id);
-
-
-    if (!queue || !queue.currentTrack) {
-      return interaction.reply('There is no song currently playing!');
-    }
     
     const tracks = queue.tracks.toArray(); //Converts the queue into an array of tracks
     const currentTrack = queue.currentTrack; //Gets the current track being played
