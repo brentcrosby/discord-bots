@@ -1,54 +1,123 @@
-const { SlashCommandBuilder } = require("discord.js");
-const { useMainPlayer } = require("discord-player");
+const { SlashCommandBuilder } = require('discord.js');
+const { useMainPlayer } = require('discord-player');
+const SpotifyWebApi = require('spotify-web-api-node');
 
 module.exports = {
   category: 'music',
   data: new SlashCommandBuilder()
     .setName('play')
-    .setDescription('Play a song')
-    .addStringOption(option =>
-			option.setName('query')
-				.setDescription('The name or url of the song, you want to play.')
-				.setRequired(true)),
-  async execute (interaction) {
-
-    // Setup player and channel
+    .setDescription('Play a song or playlist')
+    .addStringOption((option) =>
+      option
+        .setName('query')
+        .setDescription('The name or URL of the song or playlist you want to play.')
+        .setRequired(true)
+    ),
+  async execute(interaction) {
     const player = useMainPlayer();
     const channel = interaction.member.voice.channel;
     const query = interaction.options.getString('query');
 
-
-    // Check for voice channel
+    // Check if the user is in a voice channel
     if (!channel) {
-      return interaction.reply('You are not connected to a voice channel!');
+      return interaction.reply('You need to be in a voice channel to play music!');
     }
 
-    // Defer interaction so the request has time to process
+    // Defer the reply to allow time for processing
     await interaction.deferReply();
 
-    // Search for song
-    const result = await player.search(query, {
-      requestedBy: interaction.user,
+    // Initialize Spotify API client
+    const spotifyApi = new SpotifyWebApi({
+      clientId: process.env.SPOTIFY_CLIENT_ID,
+      clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
     });
-  
-    if (!result.hasTracks()) {
-      return interaction.editReply(`No results found for \`${query}\`.`);
-    }
 
-
+    // Retrieve an access token
     try {
-      const { track } = await player.play(channel, result, {
-        nodeOptions: {
-          metadata: interaction,
-          connectionOptions: { deaf: true },
-          volume: 30,
-        }
-      });
-      
-      return interaction.followUp(`You got it cool cat!`);
-    } catch (e) {
-      // Return error if something failed
-      return interaction.followUp(`Something went wrong: ${e}`);
+      const data = await spotifyApi.clientCredentialsGrant();
+      spotifyApi.setAccessToken(data.body['access_token']);
+    } catch (err) {
+      console.log('Error retrieving Spotify access token', err);
+      return interaction.editReply('Error connecting to Spotify.');
     }
-  }
+
+    // Check if the query is a Spotify playlist URL
+    const spotifyPlaylistRegex = /https?:\/\/(?:open\.)?spotify\.com\/playlist\/([a-zA-Z0-9]+)(?:\S+)?/;
+    const spotifyMatch = query.match(spotifyPlaylistRegex);
+
+    if (spotifyMatch) {
+      // It's a Spotify playlist URL
+      const playlistId = spotifyMatch[1];
+
+      try {
+        // Fetch the playlist tracks from Spotify
+        const playlistData = await spotifyApi.getPlaylistTracks(playlistId, {
+          fields: 'items(track(name,artists(name)))',
+          limit: 100, // Spotify API limit
+        });
+
+        const tracks = playlistData.body.items;
+
+        // Prepare an array to hold the search queries
+        const searchQueries = tracks.map((item) => {
+          const trackName = item.track.name;
+          const artistName = item.track.artists[0].name;
+          return `${trackName} ${artistName}`;
+        });
+
+        // Inform the user that the playlist is being processed
+        await interaction.editReply(`Processing Spotify playlist with ${searchQueries.length} tracks...`);
+
+        // Loop through each track and search YouTube
+        for (const searchQuery of searchQueries) {
+          const result = await player.search(searchQuery, {
+            requestedBy: interaction.user,
+          });
+
+          if (result.hasTracks()) {
+            // Play or add the track to the queue
+            await player.play(channel, result, {
+              nodeOptions: {
+                metadata: interaction,
+                connectionOptions: { deaf: true },
+                volume: 30,
+              },
+            });
+          } else {
+            console.log(`No results found for ${searchQuery}`);
+          }
+        }
+
+        return interaction.followUp(`Added ${searchQueries.length} tracks from the Spotify playlist to the queue! 🎶`);
+      } catch (e) {
+        console.error('Error processing Spotify playlist', e);
+        return interaction.editReply('An error occurred while processing the Spotify playlist.');
+      }
+    } else {
+      // Not a Spotify playlist, proceed with normal search
+      const result = await player.search(query, {
+        requestedBy: interaction.user,
+      });
+
+      if (!result.hasTracks()) {
+        return interaction.editReply(`No results found for \`${query}\`.`);
+      }
+
+      try {
+        // Play the track
+        await player.play(channel, result, {
+          nodeOptions: {
+            metadata: interaction,
+            connectionOptions: { deaf: true },
+            volume: 30,
+          },
+        });
+
+        return interaction.followUp(`You got it cool cat!`);
+      } catch (e) {
+        console.error('Error playing track', e);
+        return interaction.followUp(`An error occurred: ${e.message}`);
+      }
+    }
+  },
 };
