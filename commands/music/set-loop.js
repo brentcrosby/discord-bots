@@ -10,7 +10,17 @@ module.exports = {
   category: 'music',
   data: new SlashCommandBuilder()
     .setName('set-loop')
-    .setDescription('Set the loop mode'),
+    .setDescription('Set the loop-mode')
+    .addIntegerOption(option =>
+			option.setName('loop-mode')
+				.setDescription('Different Loop modes')
+				.setRequired(true)
+				.addChoices(
+					{ name: 'Off', value: 0 },
+					{ name: 'Loop track', value: 1 },
+					{ name: 'Loop queue', value: 2 },
+          { name: 'Autoplay', value: 3 },
+				)),
   
   async execute(interaction) {
     const queue = useQueue(interaction.guild.id);
@@ -31,36 +41,23 @@ module.exports = {
       });
     }
 
-    // Create buttons for each loop mode
-    const offButton = new ButtonBuilder()
-      .setCustomId('loop-off')
-      .setLabel('Off')
-      .setStyle(ButtonStyle.Secondary);
+    // Get option and set loop mode
+    const mode = interaction.options.getInteger('loop-mode');
+    queue.setRepeatMode(mode);
 
-    const trackButton = new ButtonBuilder()
-      .setCustomId('loop-track')
-      .setLabel('Track')
-      .setStyle(ButtonStyle.Success);
+    // Define labels for feedback
+    const modeLabels = {
+      0: 'Off',
+      1: 'Track',
+      2: 'Queue',
+      3: 'Autoplay'
+    };
 
-    const queueButton = new ButtonBuilder()
-      .setCustomId('loop-queue')
-      .setLabel('Queue')
-      .setStyle(ButtonStyle.Primary);
-
-    const autoplayButton = new ButtonBuilder()
-      .setCustomId('loop-autoplay')
-      .setLabel('Autoplay')
-      .setStyle(ButtonStyle.Danger);
-
-    // Arrange buttons in a row
-    const row = new ActionRowBuilder()
-      .addComponents(offButton, trackButton, queueButton, autoplayButton);
-
-    // Send the buttons as a reply
-    await interaction.reply({
-      content: 'Select a loop mode:',
-      components: [row],
-      ephemeral: true, // Optional: Only the user can see this
+    // Provide feedback to the user
+    return interaction.reply({ 
+      content: `Loop mode set to **${modeLabels[mode]}**.`, 
+      ephemeral: true 
     });
+
   }
 };
