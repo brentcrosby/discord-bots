@@ -105,15 +105,16 @@ module.exports = {
 
       try {
         // Play the track
-        await player.play(channel, result, {
+        const { queue, track } = await player.play(channel, result, {
           nodeOptions: {
             metadata: interaction,
             connectionOptions: { deaf: true },
             volume: 30,
+            repeatMode: 3,
           },
         });
 
-        return interaction.followUp(`You got it cool cat!`);
+        return interaction.followUp(`You got it cool cat! **${track.title}** added  at position: [${queue.node.getTrackPosition(track) + 1}]`);
       } catch (e) {
         console.error('Error playing track', e);
         return interaction.followUp(`An error occurred: ${e.message}`);
