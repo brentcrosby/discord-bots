@@ -5,16 +5,16 @@ const { ensureActiveQueueAndChannel } = require('../../utils/musicUtils')
 module.exports = {
   category: 'music',
   data: new SlashCommandBuilder()
-    .setName('tomfoolery')
+    .setName('party-time')
     .setDescription('Ooh secret command'),
   async execute(interaction) {
 
-    const check = ensureActiveQueueAndChannel(interaction);
+    const check = await ensureActiveQueueAndChannel(interaction);
     if (!check) return;
 
     const queue = useQueue(interaction.guild.id);
     const player = useMainPlayer();
-    const query = 'summer of tomfoolery';
+    const query = 'meatball parade';
 
 
     // Defer interaction so the request has time to process
@@ -32,7 +32,7 @@ module.exports = {
         await queue.node.play(null, options.audioPlayerOptions);
       }
 
-      await interaction.editReply(`It appears there's a bit of tomfoolery afoot!`)
+      await interaction.editReply(`GO TIME!`)
     } catch (e) {
       // Return error if something failed
       return interaction.followUp(`Something went wrong: ${e}`);
