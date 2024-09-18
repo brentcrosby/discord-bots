@@ -1,8 +1,7 @@
-const { QueueRepeatMode } = require("discord-player");
-
 const playerOptions = {
-  volume: 70,
-  repeatMode: QueueRepeatMode.AUTOPLAY,
+  volume: 30,
+  repeatMode: 3,
+  connectionOptions: { deaf: true },
   noEmitInsert: true,
   leaveOnStop: false,
   leaveOnEmpty: true,
@@ -14,4 +13,4 @@ const playerOptions = {
   disableBiquad: true,
 };
 
-module.exports = playerOptions;
+module.exports = { playerOptions };

@@ -12,10 +12,10 @@ module.exports = {
 				.setDescription('Different Loop modes')
 				.setRequired(true)
 				.addChoices(
-					{ name: 'Off', value: 0 },
-					{ name: 'Loop track', value: 1 },
-					{ name: 'Loop queue', value: 2 },
-          { name: 'Autoplay', value: 3 },
+					{ name: '0: Off', value: 0 },
+					{ name: '1: Loop track', value: 1 },
+					{ name: '2: Loop queue', value: 2 },
+          { name: '3: Autoplay', value: 3 },
 				)),
   
   async execute(interaction) {
