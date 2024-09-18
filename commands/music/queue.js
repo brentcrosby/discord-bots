@@ -19,7 +19,7 @@ module.exports = {
     const currentTrack = queue.currentTrack; //Gets the current track being played
 
     // Prepare the response for the current track
-    let response = `🎶 Now Playing: **${currentTrack.title}** by ${currentTrack.author}\n\n`;
+    let response = ``;
 
     // If there are tracks in the queue, display them
     if (tracks.length > 0) {
