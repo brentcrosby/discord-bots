@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { useMainPlayer } = require('discord-player');
-const SpotifyWebApi = require('spotify-web-api-node');
+const { playerOptions } = require('../../config/playerOptions')
+const spotifyClient = require('../../utils/spotifyClient');
 
 module.exports = {
   category: 'music',
@@ -10,7 +11,7 @@ module.exports = {
     .addStringOption((option) =>
       option
         .setName('query')
-        .setDescription('The name or URL of the song or playlist you want to play.')
+        .setDescription('The name of the song or Spotify url of the playlist or album you want to play.')
         .setRequired(true)
     )
     .addIntegerOption((option) => 
@@ -38,20 +39,15 @@ module.exports = {
     // Defer the reply to allow time for processing
     await interaction.deferReply();
 
-    // Initialize Spotify API client
-    const spotifyApi = new SpotifyWebApi({
-      clientId: process.env.SPOTIFY_CLIENT_ID,
-      clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-    });
-
     // Retrieve an access token
     try {
-      const data = await spotifyApi.clientCredentialsGrant();
-      spotifyApi.setAccessToken(data.body['access_token']);
+      await spotifyClient.getAccessToken();
     } catch (err) {
-      console.log('Error retrieving Spotify access token', err);
       return interaction.editReply('Error connecting to Spotify.');
     }
+
+    // Use the Spotify API instance
+    const spotifyApi = spotifyClient.getSpotifyApi();
 
     // Check if the query is a Spotify playlist URL
     const spotifyPlaylistRegex = /https?:\/\/(?:open\.)?spotify\.com\/playlist\/([a-zA-Z0-9]+)(?:\S+)?/;
@@ -104,8 +100,7 @@ module.exports = {
             await player.play(channel, result, {
               nodeOptions: {
                 metadata: interaction,
-                connectionOptions: { deaf: true },
-                volume: 30,
+                ...playerOptions,
               },
             });
           } else {
@@ -158,8 +153,7 @@ module.exports = {
             await player.play(channel, result, {
               nodeOptions: {
                 metadata: interaction,
-                connectionOptions: { deaf: true },
-                volume: 30,
+                ...playerOptions,
               },
             });
           } else {
@@ -191,9 +185,7 @@ module.exports = {
         const { queue, track } = await player.play(channel, result, {
           nodeOptions: {
             metadata: interaction,
-            connectionOptions: { deaf: true },
-            volume: 30,
-            repeatMode: 3,
+            ...playerOptions,
           },
         });
 

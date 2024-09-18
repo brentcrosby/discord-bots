@@ -16,7 +16,8 @@ module.exports = {
     const track = queue.currentTrack;
 
     let response = `You\'re grooving to **${track.title}** by ${track.author}\n`
-    response += `Duration: ${track.duration}  |  Link: ${track.url}`
+    response += `Duration: ${track.duration}  |  Loop mode: ${queue.repeatMode}  |  Volume: ${queue.node.volume}\n`
+    response += `Link: ${track.url}`
 
     await interaction.reply(response);
   }
