@@ -12,6 +12,18 @@ module.exports = {
         .setName('query')
         .setDescription('The name or URL of the song or playlist you want to play.')
         .setRequired(true)
+    )
+    .addIntegerOption((option) => 
+      option
+        .setName('playlist-track-amount')
+        .setDescription('Number of songs to queue from playlist')
+        .setRequired(false)
+    )
+    .addIntegerOption((option) => 
+      option
+        .setName('queue-from')
+        .setDescription('Starting position in playlist to queue from')
+        .setRequired(false)
     ),
   async execute(interaction) {
     const player = useMainPlayer();
@@ -59,11 +71,34 @@ module.exports = {
         const tracks = playlistData.body.items;
 
         // Prepare an array to hold the search queries
-        const searchQueries = tracks.map((item) => {
+        let searchQueries = tracks.map((item) => {
           const trackName = item.track.name;
           const artistName = item.track.artists[0].name;
           return `${trackName} ${artistName}`;
         });
+
+        // Slice array based on options
+        const trackLimit = interaction.options.getInteger('playlist-track-amount') ?? 50;
+        const queryStart = interaction.options.getInteger('queue-from');
+
+        if (queryStart > searchQueries.length) {
+          return interaction.editReply(`Query start exceeded the playlist length, keep it under ${searchQueries.length}`);
+        }
+
+        if (queryStart > 0) {
+          let queryEnd = queryStart + trackLimit;
+          if (queryEnd > searchQueries.length) {
+            queryEnd = searchQueries.length;  // If the track limit exceeds playlist length end at end of playlist
+          }
+          searchQueries = searchQueries.slice(queryStart, queryEnd);
+        } else {
+          let queryEnd = trackLimit;
+          if (queryEnd > searchQueries.length) {
+            queryEnd = searchQueries.length;
+          }
+          searchQueries = searchQueries.slice(0, queryEnd);
+        }
+
 
         // Inform the user that the playlist is being processed
         await interaction.editReply(`Processing Spotify playlist with ${searchQueries.length} tracks...`);
