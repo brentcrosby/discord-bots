@@ -24,7 +24,7 @@ module.exports = {
     // If there are tracks in the queue, display them
     if (tracks.length > 0) {
       response += '**Up Next:**\n';
-      const trackList = tracks.slice(0, 20) // Limit to first 20 tracks
+      const trackList = tracks.slice(0, 40) // Limit to first 40 tracks
         .map((track, index) => `${index + 1}. **${track.title}** by ${track.author}`)
         .join('\n');
 

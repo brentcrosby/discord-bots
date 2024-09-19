@@ -189,7 +189,7 @@ module.exports = {
           },
         });
 
-        return interaction.followUp(`You got it cool cat! **${track.title}** added  at position: [${queue.node.getTrackPosition(track) + 1}]`);
+        return interaction.followUp(`You got it cool cat! **${track.title}** added at position: [${queue.node.getTrackPosition(track) + 1}]`);
       } catch (e) {
         console.error('Error playing track', e);
         return interaction.followUp(`An error occurred: ${e.message}`);

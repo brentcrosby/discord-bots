@@ -9,7 +9,7 @@ const playerOptions = {
   leaveOnEmptyCooldown: 60_000,
   leaveOnEnd: true,
   leaveOnEndCooldown: 60_000,
-  pauseOnEmpty: true,
+  pauseOnEmpty: false,
   preferBridgedMetadata: true,
   disableBiquad: true,
   skipOnNoStream: true,
