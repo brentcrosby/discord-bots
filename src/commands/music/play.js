@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { useMainPlayer } = require('discord-player');
 const { playerOptions } = require('../../config/playerOptions')
-const spotifyClient = require('../../src/utils/spotifyClient');
+const spotifyClient = require('../../utils/spotifyClient');
 
 module.exports = {
   category: 'music',

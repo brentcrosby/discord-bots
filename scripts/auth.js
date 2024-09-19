@@ -11,3 +11,4 @@ const spotifyApi = new SpotifyWebApi({
 const authorizeURL = spotifyApi.createAuthorizeURL(scopes);
 
 console.log('Authorize URL:', authorizeURL);
+console.log('Visit this URL to authorize the application and get the authorization code.');
