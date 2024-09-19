@@ -1,7 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { useQueue } = require('discord-player');
-const { ensureActiveQueueAndChannel } = require('../../utils/musicUtils');
-const viewQueue = require('./queue');
+const { ensureActiveQueueAndChannel } = require('../../src/utils/musicUtils');
 
 module.exports = {
   category: 'music',

@@ -1,15 +1,15 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { useQueue, useMainPlayer } = require('discord-player');
-const { ensureActiveQueueAndChannel } = require('../../utils/musicUtils')
+const { ensureActiveQueueAndChannel } = require('../../src/utils/musicUtils')
 
 module.exports = {
   category: 'music',
   data: new SlashCommandBuilder()
-    .setName('play-next')
-    .setDescription('Queue up song to play next')
+    .setName('play-now')
+    .setDescription('Skips queue to play song')
     .addStringOption(option =>
 			option.setName('query')
-				.setDescription('The name of the song, you want to queue.')
+				.setDescription('The name of the song, you want to play.')
 				.setRequired(true)),
   async execute(interaction) {
     const queue = useQueue(interaction.guild.id);
@@ -35,11 +35,12 @@ module.exports = {
 
     try {
       queue.insertTrack(result.tracks[0], 0);
+      queue.node.skip();
       if (!queue.isPlaying()) {
         await queue.node.play(null, options.audioPlayerOptions);
       }
 
-      await interaction.editReply(`Next up **${result.tracks[0]}**!`);
+      await interaction.editReply(`You got it on the double ya dapper dog!`)
     } catch (e) {
       // Return error if something failed
       return interaction.followUp(`Something went wrong: ${e}`);

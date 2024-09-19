@@ -11,5 +11,3 @@ const spotifyApi = new SpotifyWebApi({
 const authorizeURL = spotifyApi.createAuthorizeURL(scopes);
 
 console.log('Authorize URL:', authorizeURL);
-
-// Allow private playlist searches

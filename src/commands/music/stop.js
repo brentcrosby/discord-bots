@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { useQueue } = require('discord-player');
-const { ensureActiveQueueAndChannel } = require('../../utils/musicUtils')
+const { ensureActiveQueueAndChannel } = require('../../src/utils/musicUtils')
 
 module.exports = {
   category: 'music',
@@ -14,7 +14,7 @@ module.exports = {
 
     // Get current queue
     const queue = useQueue(interaction.guild.id);
-    queue.node.stop();
-    return interaction.reply('SHUT IT DOWN!');
+    queue.node.stop(true);
+    return interaction.reply('Gotta Blast!');
   }
 }

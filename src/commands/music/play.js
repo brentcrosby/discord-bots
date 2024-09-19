@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { useMainPlayer } = require('discord-player');
 const { playerOptions } = require('../../config/playerOptions')
-const spotifyClient = require('../../utils/spotifyClient');
+const spotifyClient = require('../../src/utils/spotifyClient');
 
 module.exports = {
   category: 'music',
@@ -43,7 +43,8 @@ module.exports = {
     try {
       await spotifyClient.getAccessToken();
     } catch (err) {
-      return interaction.editReply('Error connecting to Spotify.');
+      // If access token cannot be retrieved, set spotifyApi to null
+      console.error('Spotify access token not available:', err.message);
     }
 
     // Use the Spotify API instance
