@@ -43,8 +43,7 @@ module.exports = {
     try {
       await spotifyClient.getAccessToken();
     } catch (err) {
-      // If access token cannot be retrieved, set spotifyApi to null
-      console.error('Spotify access token not available:', err.message);
+      return interaction.editReply('Error connecting to Spotify.');
     }
 
     // Use the Spotify API instance

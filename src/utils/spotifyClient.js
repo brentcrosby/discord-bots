@@ -1,59 +1,33 @@
-// spotifyClient.js
 const SpotifyWebApi = require('spotify-web-api-node');
-require('dotenv').config();
-const fs = require('fs');
-const path = require('path');
 
 class SpotifyClient {
   constructor() {
     this.spotifyApi = new SpotifyWebApi({
       clientId: process.env.SPOTIFY_CLIENT_ID,
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-      redirectUri: process.env.SPOTIFY_REDIRECT_URI,
     });
-    this.spotifyApi.setAccessToken(process.env.SPOTIFY_ACCESS_TOKEN);
-    this.spotifyApi.setRefreshToken(process.env.SPOTIFY_REFRESH_TOKEN);
+    this.tokenExpiration = null;
   }
 
   async getAccessToken() {
-    const currentAccessToken = this.spotifyApi.getAccessToken();
-    if (currentAccessToken) {
-      return currentAccessToken;
+    const currentTime = new Date().getTime();
+    if (this.tokenExpiration && currentTime < this.tokenExpiration) {
+      return this.spotifyApi.getAccessToken();
     }
 
-    // No access token available, try to refresh it
     try {
-      const data = await this.spotifyApi.refreshAccessToken();
-      const newAccessToken = data.body['access_token'];
-      this.spotifyApi.setAccessToken(newAccessToken);
-
-      // Update the .env file
-      this.updateEnvFile('SPOTIFY_ACCESS_TOKEN', newAccessToken);
-
-      console.log('The access token has been refreshed!');
-      return newAccessToken;
+      const data = await this.spotifyApi.clientCredentialsGrant();
+      this.spotifyApi.setAccessToken(data.body['access_token']);
+      this.tokenExpiration = currentTime + data.body['expires_in'] * 1000; // Set expiration time
+      return data.body['access_token'];
     } catch (err) {
-      console.error('Could not refresh access token', err);
+      console.error('Error retrieving Spotify access token', err);
       throw new Error('Error connecting to Spotify.');
     }
   }
 
   getSpotifyApi() {
     return this.spotifyApi;
-  }
-
-  updateEnvFile(key, value) {
-    const envFilePath = path.resolve(__dirname, '../.env');
-    let envConfig = fs.readFileSync(envFilePath, 'utf8');
-
-    const regex = new RegExp(`^${key}=.*$`, 'm');
-    if (envConfig.match(regex)) {
-      envConfig = envConfig.replace(regex, `${key}=${value}`);
-    } else {
-      envConfig += `\n${key}=${value}`;
-    }
-
-    fs.writeFileSync(envFilePath, envConfig);
   }
 }
 
