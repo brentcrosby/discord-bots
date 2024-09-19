@@ -60,14 +60,19 @@ module.exports = {
     const queryStart = interaction.options.getInteger('queue-start');
 
     // debug response
-    let debug = '';
+    // let debug = '';
 
     if (spotifyPlaylistMatch) {
       // It's a Spotify playlist URL
       const playlistId = spotifyPlaylistMatch[1];
-      debug += `playlist id: ${playlistId}\n`;
+      // debug += `playlist id: ${playlistId}\n`;
 
       try {
+        // Fetch the playlist name from Spotify
+        const playlistNameData = await spotifyApi.getPlaylist(playlistId, {
+          fields: 'name',
+        });
+        const playlistName = playlistNameData.body.name;
         // Fetch the playlist tracks from Spotify
         const playlistData = await spotifyApi.getPlaylistTracks(playlistId, {
           fields: 'items(track(name,artists(name)))',
@@ -76,7 +81,7 @@ module.exports = {
         });
 
         const tracks = playlistData.body.items;
-        debug += `tracks: ${tracks}\n`;
+        // debug += `tracks: ${tracks}\n`;
 
         // Prepare an array to hold the search queries
         let searchQueries = tracks.map((item) => {
@@ -87,7 +92,7 @@ module.exports = {
 
 
         // Inform the user that the playlist is being processed
-        await interaction.editReply(`Processing Spotify playlist with ${searchQueries.length} tracks...`);
+        await interaction.editReply(`Processing Spotify playlist **${playlistName}** with ${searchQueries.length} tracks...`);
 
         // Loop through each track and search YouTube
         for (const searchQuery of searchQueries) {
@@ -109,7 +114,7 @@ module.exports = {
         }
 
         // console.log(debug);
-        return interaction.followUp(`Added ${searchQueries.length} tracks from the Spotify playlist to the queue! 🎶`);
+        return interaction.followUp(`Added ${searchQueries.length} tracks from the Spotify playlist **${playlistName}** to the queue!`);
       } catch (e) {
         console.error('Error processing Spotify playlist', e);
         return interaction.editReply('An error occurred while processing the Spotify playlist.');
@@ -117,9 +122,14 @@ module.exports = {
     } else if (spotifyAlbumMatch) {  //Spotify album check
       // It's a Spotify album URL
       const albumId = spotifyAlbumMatch[1];
-      debug += `Album id: ${albumId}\n`;
+      // debug += `Album id: ${albumId}\n`;
 
       try {
+        // Fetch the album name from Spotify
+        const albumNameData = await spotifyApi.getAlbum(albumId, {
+          fields: 'name',
+        });
+        const albumName = albumNameData.body.name;
         // Fetch the album tracks from Spotify
         const albumData = await spotifyApi.getAlbumTracks(albumId, {
           fields: 'items(name,artists(name))',
@@ -127,8 +137,8 @@ module.exports = {
           offset: queryStart ?? 0,  // start from queryStart index or beginning of playlist
         });
 
-        const tracks = albumData.body.items;  //Need to learn how to parse data
-        debug +=  `tracks: ${JSON.stringify(tracks, null, 2)}\n`;
+        const tracks = albumData.body.items; 
+        // debug +=  `tracks: ${JSON.stringify(tracks, null, 2)}\n`;
 
         // console.log(debug);
         // Prepare an array to hold the search queries
@@ -140,7 +150,7 @@ module.exports = {
 
 
         // Inform the user that the album is being processed
-        await interaction.editReply(`Processing Spotify album with ${searchQueries.length} tracks...`);
+        await interaction.editReply(`Processing Spotify album **${albumName}** with ${searchQueries.length} tracks...`);
 
         // Loop through each track and search YouTube
         for (const searchQuery of searchQueries) {
@@ -162,7 +172,7 @@ module.exports = {
         }
 
         // console.log(debug);
-        return interaction.followUp(`Added ${searchQueries.length} tracks from the Spotify album to the queue! 🎶`);
+        return interaction.followUp(`Added ${searchQueries.length} tracks from the Spotify album **${albumName}** to the queue!`);
       } catch (e) {
         console.error('Error processing Spotify album', e);
         return interaction.editReply('An error occurred while processing the Spotify album.');
